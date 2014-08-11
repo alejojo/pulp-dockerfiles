@@ -13,8 +13,8 @@ PULP_SERVER_NAME=${PULP_SERVER_NAME:=pulp.example.com}
 DB_SERVER_HOST=${DB_SERVER_HOST:=${SERVICE_HOST}}
 DB_SERVER_PORT=${DB_SERVER_PORT:=21017}
 
-AMQP_SERVER_HOST=${AMQP_SERVER_HOST:=${SERVICE_HOST}}
-AMQP_SERVER_PORT=${AMQP_SERVER_PORT:=5671}
+MSG_SERVER_HOST=${MSG_SERVER_HOST:=${SERVICE_HOST}}
+MSG_SERVER_PORT=${MSG_SERVER_PORT:=5672}
 
 check_config_target() {
     if [ ! -f ${PULP_SERVER_CONF} ]
@@ -36,8 +36,8 @@ configure_server_name() {
 #
 configure_messaging() {
     sed -i \
-        -e "s/%AMQP_SERVER_HOST%/${AMQP_SERVER_HOST}/" \
-        -e "s/%AMQP_SERVER_PORT%/${AMQP_SERVER_PORT}/" \
+        -e "s/%MSG_SERVER_HOST%/${MSG_SERVER_HOST}/" \
+        -e "s/%MSG_SERVER_PORT%/${MSG_SERVER_PORT}/" \
         $PULP_SERVER_CONF
 }
 
