@@ -11,7 +11,7 @@ PULP_SERVER_CONF=${PULP_SERVER_CONF:=/etc/pulp/server.conf}
 PULP_SERVER_NAME=${PULP_SERVER_NAME:=pulp.example.com}
 
 DB_SERVER_HOST=${DB_SERVER_HOST:=${SERVICE_HOST}}
-DB_SERVER_PORT=${DB_SERVER_PORT:=21017}
+DB_SERVER_PORT=${DB_SERVER_PORT:=27017}
 
 MSG_SERVER_HOST=${MSG_SERVER_HOST:=${SERVICE_HOST}}
 MSG_SERVER_PORT=${MSG_SERVER_PORT:=5672}
@@ -51,6 +51,12 @@ configure_database() {
         $PULP_SERVER_CONF
 }
 
+initialize_database() {
+    # why apache? MAL
+    runuser apache -s /bin/bash /bin/bash -c "/usr/bin/pulp-manage-db"
+}
+
+
 #
 # Begin running the Celery Beat scheduler
 # 
@@ -66,5 +72,7 @@ check_config_target
 configure_server_name
 configure_database
 configure_messaging
+
+initialize_database
 
 start_celerybeat

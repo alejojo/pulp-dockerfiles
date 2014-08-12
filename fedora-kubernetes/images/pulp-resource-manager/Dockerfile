@@ -12,8 +12,6 @@
 #
 FROM docker-registry.usersys.redhat.com/markllama/pulp-base
 
-VOLUME [ "/etc/pulp" ]
-
 ADD run.sh /run.sh
 
 CMD [ "/run.sh" ]

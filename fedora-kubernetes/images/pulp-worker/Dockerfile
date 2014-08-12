@@ -1,5 +1,5 @@
 #
-# Pulp Celerybeat service - coordinate activities
+# Pulp Worker service - coordinate activities
 #
 # Environment Variables:
 #  DB_SERVER_HOST: name or IP address of the MongoDB server
@@ -11,6 +11,8 @@
 # must be started with -v /dev/log:/dev/log
 #
 FROM docker-registry.usersys.redhat.com/markllama/pulp-base
+
+VOLUME [ "/var/www/pulp", "/var/lib/pulp" ]
 
 ADD run.sh /run.sh
 

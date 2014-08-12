@@ -17,3 +17,5 @@ RUN git clone https://github.com/pulp/pulp_docker.git /opt/pulp_docker
 RUN /opt/pulp_docker/manage_setup_pys.sh develop
 
 RUN python /opt/pulp_docker/pulp-dev.py -I
+
+ADD server.conf /etc/pulp/server.conf
