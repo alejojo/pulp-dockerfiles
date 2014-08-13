@@ -31,13 +31,27 @@ start_beat_service() {
     # PULP_SERVER_NAME=$1
     # DB_SERVER_HOST=$2
     # MSG_SERVER_HOST=$3
-    echo docker run -d --name pulp-beat \
+    docker run -d --name pulp-beat \
         -v /dev/log:/dev/log \
         -e PULP_SERVER_NAME=$1 \
         -e DB_SERVER_HOST=$2 \
         -e MSG_SERVER_HOST=$3 \
         ${REGISTRY}/markllama/pulp-beat
 }
+
+# start the celerybeat image
+start_beat_service() {
+    # PULP_SERVER_NAME=$1
+    # DB_SERVER_HOST=$2
+    # MSG_SERVER_HOST=$3
+    docker run -d --name pulp-beat \
+        -v /dev/log:/dev/log \
+        -e PULP_SERVER_NAME=$1 \
+        -e DB_SERVER_HOST=$2 \
+        -e MSG_SERVER_HOST=$3 \
+        ${REGISTRY}/markllama/pulp-resource-manager
+}
+
 
 # start the resource-manager image
 
@@ -57,3 +71,4 @@ start_db_service
 DB_SERVER_HOST=$(docker_ip pulp-db)
 
 start_beat_service $PULP_SERVER_NAME $DB_SERVER_HOST $MSG_SERVER_HOST
+start_resource_manager_service $PULP_SERVER_NAME $DB_SERVER_HOST $MSG_SERVER_HOST
