@@ -3,6 +3,12 @@
 # Display startup activity
 set -x
 
+WORKER_NUMBER=$1
+if [ -z "$WORKER_NUMBER" ]
+then
+    exit "Missing required argument: worker number"
+fi
+
 # Take settings from Kubernetes service environment unless they are explicitly
 # provided
 PULP_SERVER_CONF=${PULP_SERVER_CONF:=/etc/pulp/server.conf}
@@ -53,14 +59,19 @@ configure_database() {
 #
 # Begin running the Pulp Resource Manager worker
 # 
-start_resource_manager() {
-       exec runuser apache \
-      -s /bin/bash \
-      -c "/usr/bin/celery worker -c 1 -n resource_manager@$PULP_SERVER_NAME \
-          --events --app=pulp.server.async.app \
-          --umask=18 \
-          --loglevel=INFO -Q resource_manager \
-          --logfile=/var/log/pulp/resource_manager.log"
+start_worker() {
+    # WORKER_NUMBER=$1
+    # PULP_SERVER_NAME=$2
+    exec runuser apache \
+	-s /bin/bash \
+	-c "/usr/bin/celery worker \
+	--events --app=pulp.server.async.app \
+	--loglevel=INFO \
+	-c 1 \
+        --umask=18 \
+	-n reserved_resource_worker-$1@$2 \
+	--logfile=/var/log/pulp/reserved_resource_worker-$1.log"
+
 }
 # =============================================================================
 # Main
@@ -71,4 +82,4 @@ configure_server_name
 configure_database
 configure_messaging
 
-start_resource_manager
+start_worker $WORKER_NUMBER $PULP_SERVER_NAME

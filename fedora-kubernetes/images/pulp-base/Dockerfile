@@ -2,7 +2,7 @@ FROM fedora:20
 MAINTAINER Mark Lamourine <markllama@gmail.com>
 
 ADD http://repos.fedorapeople.org/repos/pulp/pulp/fedora-pulp.repo \
-	/etc/yum.repos.d/rhel-pulp.repo
+	/etc/yum.repos.d/fedora-pulp.repo
 
 RUN yum update -y && \
     yum groupinstall -y pulp-server && \

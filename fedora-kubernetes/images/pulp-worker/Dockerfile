@@ -16,4 +16,5 @@ VOLUME [ "/var/www/pulp", "/var/lib/pulp" ]
 
 ADD run.sh /run.sh
 
-CMD [ "/run.sh" ]
+# Usage: /run.sh <worker number>
+ENTRYPOINT "/run.sh"
