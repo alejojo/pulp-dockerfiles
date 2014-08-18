@@ -1,0 +1,101 @@
+Tools and Incantations for verifying the components of a Pulp service
+
+=== Services to verify
+
+1) Mongo DB configuration and communication
+
+- Startup
+- Logs
+- Connectivity
+- Presence or absence of the Pulp database
+- Heartbeat or timestamp records?
+
+2) QPID (AMQP) service
+
+- Startup
+- Logs
+- Connectivity
+- Presence or absence of message queues
+- Heartbeat or echo messages?
+
+3) Celery Beat service
+
+- Startup
+- Logs
+- Presence or absence of message queues
+- Heartbeat or echo messages?
+
+4) Pulp Resource Manager (Celery Worker)
+
+- Startup
+- Logs
+- Presence of message queue
+- Heartbeat or echo messages?
+
+5) Pulp content repository
+- touch files?
+
+6) Pulp Worker (Celery Worker)
+
+- Startup
+- Logs
+- Presence of message queue
+- Heartbeat or echo messages
+
+7) Apache/WSGI content service
+- Startup
+- Logs
+- test queries
+
+8) Apache/WSGI admin service
+- Startup
+- Logs
+- test queries
+- pulp-admin CLI tool
+
+= Docker
+== Getting container information from Docker
+
+docker inspect [--format=''] <container id> [<container id>...]
+
+docker inspect returns a JSON structure.  It is an array of hashes, one hash
+for each container requested. The first level of the hash contains individual
+key-value pairs or may contain sub-hashes with more structured information.
+
+--format strings are JSON subset strings.
+
+For example the IP Address of a docker container is returned in
+
+NetworkSettings.IPAddress of each container hash.
+
+The format string is '{{.NetworkSettings.IPAddress}}'
+
+== Stopping all containers
+
+  docker ps -a -q | xargs docker rm -f
+
+= Mongodb Verification tools and tips
+
+Required package: mongodb
+
+Get the IP address of the mongodb server.
+
+# verify connectivity and list databases
+echo 'show dbs' | mongo --host <hostname or IP>
+
+# verify presence of DB 
+echo 'show collections' | mongo --host <hostname or ip> pulp_database
+
+= QPID Verification tools and tips
+
+Required Package: qpid-tools
+
+# examine the list of queues on a QPID service
+qpid-config queues <username>@<hostname or IP>
+
+When not using authentication:
+
+qpid-config queues -b guest@<hostname or ip>
+
+qpid-config queues -b guest@172.17.0.160
+

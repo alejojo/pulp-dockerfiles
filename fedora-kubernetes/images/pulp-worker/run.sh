@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Display startup activity
 set -x

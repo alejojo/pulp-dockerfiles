@@ -12,9 +12,9 @@
 #
 FROM docker-registry.usersys.redhat.com/markllama/pulp-base
 
-VOLUME [ "/var/www/pulp", "/var/lib/pulp" ]
+VOLUME [ "/var/www", "/var/lib/pulp" ]
 
 ADD run.sh /run.sh
 
 # Usage: /run.sh <worker number>
-ENTRYPOINT "/run.sh"
+ENTRYPOINT ["/run.sh"]

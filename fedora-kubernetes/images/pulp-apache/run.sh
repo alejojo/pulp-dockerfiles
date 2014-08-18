@@ -1,6 +1,11 @@
 #!/bin/bash
 
-cat > /root/ssl.conf <<EOF
+set -x
+
+APACHE_HOSTNAME=${APACHE_HOSTNAME:=pulp.example.com}
+
+configure_ssl_ca() {
+    cat > /root/ssl.conf <<EOF
 [ req ]
 prompt                  = no
 distinguished_name      = pulp_server
@@ -13,17 +18,88 @@ emailAddress            = admin@example.com
 organizationName        = pulp
 organizationalUnitName  = dev
 EOF
+    export OPENSSL_CONF=/root/ssl.conf
+}
 
-export OPENSSL_CONF=/root/ssl.conf
 
-# create and configure SSL certs for run-time hostname
-CERT_PATH="/etc/pki/pulp"
-openssl genrsa -out $CERT_PATH/server.key 2048
-openssl req -new -key $CERT_PATH/server.key -out $CERT_PATH/server.csr
-openssl x509 -req -days 365 -CA $CERT_PATH/ca.crt -CAkey $CERT_PATH/ca.key -set_serial 01 -in $CERT_PATH/server.csr -out $CERT_PATH/server.crt
+create_server_cert() {
+    # create and configure SSL certs for run-time hostname
+    CERT_PATH=${CERT_PATH:="/etc/pki/pulp"}
 
-sed -i "s/SSLCertificateFile \/etc\/pki\/tls\/certs\/localhost.crt/SSLCertificateFile \/etc\/pki\/pulp\/server.crt/" /etc/httpd/conf.d/ssl.conf
-sed -i "s/SSLCertificateKeyFile \/etc\/pki\/tls\/private\/localhost.key/SSLCertificateKeyFile \/etc\/pki\/pulp\/server.key/" /etc/httpd/conf.d/ssl.conf
-sed -i "s/#ServerName www.example.com:443/ServerName $APACHE_HOSTNAME:443/" /etc/httpd/conf.d/ssl.conf 
+    SERVER_KEY_FILE=${SERVER_KEY_FILE:=${CERT_PATH}/server.key}
+    CERT_REQUEST_FILE=${CERT_REQUEST_FILE:=${CERT_PATH}/server.csr}
+    SERVER_CERT_FILE=${SERVER_CERT_FILE:=${CERT_PATH}/server.pem}
+    CA_KEY_FILE=${CA_KEY_FILE:=${CERT_PATH}/ca.key}
+    CA_CERT_FILE=${CA_CERT_FILE:=${CERT_PATH}/ca.crt}
 
-exec /usr/sbin/init
+    openssl genrsa -out ${SERVER_KEY_FILE} 2048
+    openssl req -new -key ${SERVER_KEY_FILE} -out ${CERT_REQUEST_FILE}
+    openssl x509 -req -days 365 -CA ${CA_CERT_FILE} -CAkey ${CA_KEY_FILE} \
+        -set_serial 01 -in ${CERT_REQUEST_FILE} -out ${SERVER_CERT_FILE}
+    
+    HTTPD_SSL_CONF=/etc/httpd/conf.d/ssl.conf
+}
+
+configure_httpd_ssl() {
+    sed -i "s|SSLCertificateFile /etc/pki/tls/certs/localhost.crt|SSLCertificateFile ${SERVER_CERT_FILE}|" ${HTTPD_SSL_CONF}
+    sed -i "s|SSLCertificateKeyFile /etc/pki/tls/private/localhost.key|SSLCertificateKeyFile ${SERVER_KEY_FILE}|" ${HTTPD_SSL_CONF}
+    sed -i "s/#ServerName www.example.com:443/ServerName ${APACHE_HOSTNAME}:443/" ${HTTPD_SSL_CONF}
+}
+
+# Take settings from Kubernetes service environment unless they are explicitly
+# provided
+PULP_SERVER_CONF=${PULP_SERVER_CONF:=/etc/pulp/server.conf}
+
+PULP_SERVER_NAME=${PULP_SERVER_NAME:=pulp.example.com}
+
+DB_SERVER_HOST=${DB_SERVER_HOST:=${SERVICE_HOST}}
+DB_SERVER_PORT=${DB_SERVER_PORT:=27017}
+
+MSG_SERVER_HOST=${MSG_SERVER_HOST:=${SERVICE_HOST}}
+MSG_SERVER_PORT=${MSG_SERVER_PORT:=5672}
+
+check_config_target() {
+    if [ ! -f ${PULP_SERVER_CONF} ]
+    then
+        echo "Cannot find required config file ${PULP_SERVER_CONF}"
+        exit 2  
+    fi
+}
+
+#
+# Set the Pulp service public hostname
+#
+configure_server_name() {
+    sed -i -e "s/%PULP_SERVER_NAME%/${PULP_SERVER_NAME}/" ${PULP_SERVER_CONF}
+}
+
+#
+# Set the messaging server access information
+#
+configure_messaging() {
+    sed -i \
+        -e "s/%MSG_SERVER_HOST%/${MSG_SERVER_HOST}/" \
+        -e "s/%MSG_SERVER_PORT%/${MSG_SERVER_PORT}/" \
+        $PULP_SERVER_CONF
+}
+
+#
+# Set the database access information
+#
+configure_database() {
+    sed -i \
+        -e "s/%DB_SERVER_HOST%/${DB_SERVER_HOST}/" \
+        -e "s/%DB_SERVER_PORT%/${DB_SERVER_PORT}/" \
+        $PULP_SERVER_CONF
+}
+
+#========================================================================
+# Main
+#========================================================================
+configure_ssl_ca
+create_server_cert
+configure_httpd_ssl
+configure_messaging
+configure_database
+
+exec /usr/sbin/httpd -DFOREGROUND -E -
