@@ -99,3 +99,18 @@ qpid-config queues -b guest@<hostname or ip>
 
 qpid-config queues -b guest@172.17.0.160
 
+= pulp admin access
+
+curl --insecure --request POST -d '' 
+
+curl --request POST -d '' --insecure https://admin:changeme@172.17.0.169/pulp/api/v2/login
+
+ curl --request POST -d '' --insec://admin:admin@172.17.0.169/pulp/api/v2/actions/login/
+
+
+= pulp content access
+
+
+= syslog journals
+
+journalctl -fl SYSLOG_IDENTIFIER=pulp + SYSLOG_IDENTIFIER=celery + SYSLOG_IDENTIFIER=httpd
