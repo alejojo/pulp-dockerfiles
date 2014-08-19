@@ -4,21 +4,23 @@ set -x
 
 APACHE_HOSTNAME=${APACHE_HOSTNAME:=pulp.example.com}
 
+
 configure_ssl_ca() {
-    cat > /root/ssl.conf <<EOF
+    # $1=OPENSSL_CONF
+    # $2=APACHE_HOSTNAME
+    cat > $1 <<EOF
 [ req ]
 prompt                  = no
 distinguished_name      = pulp_server
 
 [ pulp_server ]
-commonName              = $APACHE_HOSTNAME
+commonName              = $2
 stateOrProvinceName     = MA
 countryName             = US
 emailAddress            = admin@example.com
 organizationName        = pulp
 organizationalUnitName  = dev
 EOF
-    export OPENSSL_CONF=/root/ssl.conf
 }
 
 
@@ -37,10 +39,10 @@ create_server_cert() {
     openssl x509 -req -days 365 -CA ${CA_CERT_FILE} -CAkey ${CA_KEY_FILE} \
         -set_serial 01 -in ${CERT_REQUEST_FILE} -out ${SERVER_CERT_FILE}
     
-    HTTPD_SSL_CONF=/etc/httpd/conf.d/ssl.conf
 }
 
 configure_httpd_ssl() {
+    # HTTPD_SSL_CONF=$1
     sed -i "s|SSLCertificateFile /etc/pki/tls/certs/localhost.crt|SSLCertificateFile ${SERVER_CERT_FILE}|" ${HTTPD_SSL_CONF}
     sed -i "s|SSLCertificateKeyFile /etc/pki/tls/private/localhost.key|SSLCertificateKeyFile ${SERVER_KEY_FILE}|" ${HTTPD_SSL_CONF}
     sed -i "s/#ServerName www.example.com:443/ServerName ${APACHE_HOSTNAME}:443/" ${HTTPD_SSL_CONF}
@@ -96,9 +98,14 @@ configure_database() {
 #========================================================================
 # Main
 #========================================================================
-configure_ssl_ca
+export OPENSSL_CONF=${OPENSSL_CONF:=/root/ssl.conf}
+configure_ssl_ca ${OPENSSL_CONF} ${APACHE_HOSTNAME}
 create_server_cert
-configure_httpd_ssl
+unset OPENSSL_CONF
+
+HTTPD_SSL_CONF=${HTTPD_SSL_CONF:=/etc/httpd/conf.d/ssl.conf}
+configure_httpd_ssl ${HTTPD_SSL_CONF}
+
 configure_messaging
 configure_database
 

@@ -103,9 +103,9 @@ qpid-config queues -b guest@172.17.0.160
 
 curl --insecure --request POST -d '' 
 
-curl --request POST -d '' --insecure https://admin:changeme@172.17.0.169/pulp/api/v2/login
+curl --request POST -d '' --insecure https://admin:admin@172.17.0.169/pulp/api/v2/login
 
- curl --request POST -d '' --insec://admin:admin@172.17.0.169/pulp/api/v2/actions/login/
+ curl --request POST -d '' --insecure https://admin:admin@172.17.0.169/pulp/api/v2/actions/login/
 
 
 = pulp content access
