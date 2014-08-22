@@ -29,13 +29,13 @@ print_journal() {
 # start the celerybeat service
 start_beat_service() {
     # PULP_SERVER_NAME=$1
-    # DB_SERVER_HOST=$2
-    # MSG_SERVER_HOST=$3
+    # DB_SERVICE_HOST=$2
+    # MSG_SERVICE_HOST=$3
     docker run -d --name pulp-beat \
         -v /dev/log:/dev/log \
         -e PULP_SERVER_NAME=$1 \
-        -e DB_SERVER_HOST=$2 \
-        -e MSG_SERVER_HOST=$3 \
+        -e DB_SERVICE_HOST=$2 \
+        -e MSG_SERVICE_HOST=$3 \
         ${REGISTRY}/markllama/pulp-beat
 }
 
@@ -46,13 +46,13 @@ database_migration_complete() {
 # start the resource-manager
 start_resource_manager_service() {
     # PULP_SERVER_NAME=$1
-    # DB_SERVER_HOST=$2
-    # MSG_SERVER_HOST=$3
+    # DB_SERVICE_HOST=$2
+    # MSG_SERVICE_HOST=$3
     docker run -d --name pulp-resource-manager \
         -v /dev/log:/dev/log \
         -e PULP_SERVER_NAME=$1 \
-        -e DB_SERVER_HOST=$2 \
-        -e MSG_SERVER_HOST=$3 \
+        -e DB_SERVICE_HOST=$2 \
+        -e MSG_SERVICE_HOST=$3 \
         ${REGISTRY}/markllama/pulp-resource-manager
 }
 
@@ -65,15 +65,15 @@ start_content_volumes() {
 # start a worker image
 start_worker_service() {
     # PULP_SERVER_NAME=$1
-    # DB_SERVER_HOST=$2
-    # MSG_SERVER_HOST=$3
+    # DB_SERVICE_HOST=$2
+    # MSG_SERVICE_HOST=$3
     # WORKER_NUMBER=$4
     docker run -d --name pulp-worker-$4 \
         -v /dev/log:/dev/log \
         --volumes-from pulp-content-volumes \
         -e PULP_SERVER_NAME=$1 \
-        -e DB_SERVER_HOST=$2 \
-        -e MSG_SERVER_HOST=$3 \
+        -e DB_SERVICE_HOST=$2 \
+        -e MSG_SERVICE_HOST=$3 \
         ${REGISTRY}/markllama/pulp-worker $4
 }
 
@@ -81,14 +81,14 @@ start_worker_service() {
 # start a worker image
 start_apache_service() {
     # PULP_SERVER_NAME=$1
-    # DB_SERVER_HOST=$2
-    # MSG_SERVER_HOST=$3
+    # DB_SERVICE_HOST=$2
+    # MSG_SERVICE_HOST=$3
     docker run -d --name pulp-apache \
         -v /dev/log:/dev/log \
         --volumes-from pulp-content-volumes \
         -e PULP_SERVER_NAME=$1 \
-        -e DB_SERVER_HOST=$2 \
-        -e MSG_SERVER_HOST=$3 \
+        -e DB_SERVICE_HOST=$2 \
+        -e MSG_SERVICE_HOST=$3 \
         ${REGISTRY}/markllama/pulp-apache
 }
 
@@ -116,12 +116,12 @@ start_apache_service() {
 #exit
 
 start_qpid_service
-MSG_SERVER_HOST=$(docker_ip pulp-qpid)
+MSG_SERVICE_HOST=$(docker_ip pulp-qpid)
 
 start_db_service
-DB_SERVER_HOST=$(docker_ip pulp-db)
+DB_SERVICE_HOST=$(docker_ip pulp-db)
 
-start_beat_service $PULP_SERVER_NAME $DB_SERVER_HOST $MSG_SERVER_HOST
+start_beat_service $PULP_SERVER_NAME $DB_SERVICE_HOST $MSG_SERVICE_HOST
 
 SLEEP_COUNT=0
 while ! database_migration_complete
@@ -132,19 +132,19 @@ do
 done
 
 # check qpid service for celery queue: requires qpid-tools package
-#  qpid-config queues -b guest@${MSG_SERVER_HOST} celeryev
-#  qpid-queue-states -a guest@${MSG_SERVER_HOST} celeryev
+#  qpid-config queues -b guest@${MSG_SERVICE_HOST} celeryev
+#  qpid-queue-states -a guest@${MSG_SERVICE_HOST} celeryev
 
-start_resource_manager_service $PULP_SERVER_NAME $DB_SERVER_HOST $MSG_SERVER_HOST
+start_resource_manager_service $PULP_SERVER_NAME $DB_SERVICE_HOST $MSG_SERVICE_HOST
 
 start_content_volumes
 
-start_worker_service $PULP_SERVER_NAME $DB_SERVER_HOST $MSG_SERVER_HOST 1
-start_worker_service $PULP_SERVER_NAME $DB_SERVER_HOST $MSG_SERVER_HOST 2
-start_worker_service $PULP_SERVER_NAME $DB_SERVER_HOST $MSG_SERVER_HOST 3
-start_worker_service $PULP_SERVER_NAME $DB_SERVER_HOST $MSG_SERVER_HOST 4
+start_worker_service $PULP_SERVER_NAME $DB_SERVICE_HOST $MSG_SERVICE_HOST 1
+start_worker_service $PULP_SERVER_NAME $DB_SERVICE_HOST $MSG_SERVICE_HOST 2
+start_worker_service $PULP_SERVER_NAME $DB_SERVICE_HOST $MSG_SERVICE_HOST 3
+start_worker_service $PULP_SERVER_NAME $DB_SERVICE_HOST $MSG_SERVICE_HOST 4
 
 
-start_apache_service $PULP_SERVER_NAME $DB_SERVER_HOST $MSG_SERVER_HOST
+start_apache_service $PULP_SERVER_NAME $DB_SERVICE_HOST $MSG_SERVICE_HOST
 
 echo $(docker_ip pulp-apache)
