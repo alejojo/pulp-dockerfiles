@@ -1,13 +1,13 @@
 {
-  "id": "pulpqpidd",
+  "id": "pulpmsg",
   "kind": "Pod",
   "apiVersion": "v1beta1",
   "desiredState": {
     "manifest": {
       "version": "v1beta1",
-      "id": "pulpqpid",
+      "id": "pulp_msg",
       "containers": [{
-        "name": "pulp-qpid",
+        "name": "pulp-msg",
         "image": "docker-registry.usersys.redhat.com/markllama/qpid",
         "ports": [{
           "containerPort": 5672,
@@ -17,6 +17,6 @@
     }
   },
   "labels": {
-    "name": "pulp-qpidd"
+    "name": "pulpmsg"
   }
 }

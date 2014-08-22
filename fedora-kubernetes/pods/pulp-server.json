@@ -3,24 +3,19 @@
 //
 // registry: http://docker-registry.usersys.redhat.com:8080/
 {
-  "id": "pulp-mongodb",
+  "id": "pulp-beat",
   "desiredState": {
     "manifest": {
       "version": "0.1",
-      "id": "pulp-data",
+      "id": "pulp-beat",
       "containers": [{
-        "name": "pulp-mongodb",
-        "image": "docker-registry.usersys.redhat.com/pulp/mongodb",
-        "ports": [{
-          "containerPort": 27017,
-          "hostPort": 27017
-        }]
-        
+        "name": "pulp-beat",
+        "image": "docker-registry.usersys.redhat.com/markllama/pulp-beat",
       }]
     }
   },
   "labels": {
-    "name": "pulp-mongodb"
+    "name": "pulp-beat"
   }
 }
 
