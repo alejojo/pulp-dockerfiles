@@ -9,11 +9,11 @@ PULP_SERVER_CONF=${PULP_SERVER_CONF:=/etc/pulp/server.conf}
 
 PULP_SERVER_NAME=${PULP_SERVER_NAME:=pulp.example.com}
 
-DB_SERVER_HOST=${DB_SERVER_HOST:=${SERVICE_HOST}}
-DB_SERVER_PORT=${DB_SERVER_PORT:=27017}
+DB_SERVICE_HOST=${DB_SERVICE_HOST:=${SERVICE_HOST}}
+DB_SERVICE_PORT=${DB_SERVICE_PORT:=27017}
 
-MSG_SERVER_HOST=${MSG_SERVER_HOST:=${SERVICE_HOST}}
-MSG_SERVER_PORT=${MSG_SERVER_PORT:=5672}
+MSG_SERVICE_HOST=${MSG_SERVICE_HOST:=${SERVICE_HOST}}
+MSG_SERVICE_PORT=${MSG_SERVICE_PORT:=5672}
 
 check_config_target() {
     if [ ! -f ${PULP_SERVER_CONF} ]
@@ -35,8 +35,8 @@ configure_server_name() {
 #
 configure_messaging() {
     sed -i \
-        -e "s/%MSG_SERVER_HOST%/${MSG_SERVER_HOST}/" \
-        -e "s/%MSG_SERVER_PORT%/${MSG_SERVER_PORT}/" \
+        -e "s/%MSG_SERVICE_HOST%/${MSG_SERVICE_HOST}/" \
+        -e "s/%MSG_SERVICE_PORT%/${MSG_SERVICE_PORT}/" \
         $PULP_SERVER_CONF
 }
 
@@ -45,8 +45,8 @@ configure_messaging() {
 #
 configure_database() {
     sed -i \
-        -e "s/%DB_SERVER_HOST%/${DB_SERVER_HOST}/" \
-        -e "s/%DB_SERVER_PORT%/${DB_SERVER_PORT}/" \
+        -e "s/%DB_SERVICE_HOST%/${DB_SERVICE_HOST}/" \
+        -e "s/%DB_SERVICE_PORT%/${DB_SERVICE_PORT}/" \
         $PULP_SERVER_CONF
 }
 

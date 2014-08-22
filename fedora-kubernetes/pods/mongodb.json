@@ -11,13 +11,12 @@
         "image": "docker-registry.usersys.redhat.com/markllama/mongodb",
         "ports": [{
           "containerPort": 27017,
-          "hostPort": 27017
         }]
       }]
     }
   },
   "labels": {
-    "name": "pulpdb"
+    "name": "db"
   }
 }
 

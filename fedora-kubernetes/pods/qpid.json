@@ -11,12 +11,11 @@
         "image": "docker-registry.usersys.redhat.com/markllama/qpid",
         "ports": [{
           "containerPort": 5672,
-          "hostPort": 5672
         }]
       }]
     }
   },
   "labels": {
-    "name": "pulpmsg"
+    "name": "msg"
   }
 }
