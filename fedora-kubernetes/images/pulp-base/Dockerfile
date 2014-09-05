@@ -5,9 +5,8 @@ ADD https://repos.fedorapeople.org/repos/pulp/pulp/fedora-pulp.repo \
 	/etc/yum.repos.d/fedora-pulp.repo
 
 RUN yum groupinstall -y pulp-server && \
-    yum install -y qpid-cpp-server qpid-cpp-server-store \
-         python-qpid-qmf python-qpid python-pulp-rpm-common && \
-    yum install -y augeas findutils git && \
+    yum install -y python-qpid-qmf python-qpid python-pulp-rpm-common && \
+    yum install -y augeas && \
     yum clean all
 
 # install pulp_docker plugin to manage docker image repositories
