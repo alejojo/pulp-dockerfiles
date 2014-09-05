@@ -8,7 +8,7 @@
       "id": "pulp_msg",
       "containers": [{
         "name": "pulp-msg",
-        "image": "docker-registry.usersys.redhat.com/markllama/qpid",
+        "image": "markllama/qpid",
         "ports": [{
           "containerPort": 5672,
         }]

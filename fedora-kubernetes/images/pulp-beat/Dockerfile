@@ -1,3 +1,6 @@
+FROM markllama/pulp-base
+MAINTAINER Mark Lamourine <markllama@gmail.com>
+
 #
 # Pulp Celerybeat service - coordinate activities
 #
@@ -10,7 +13,6 @@
 #
 # must be started with -v /dev/log:/dev/log
 #
-FROM docker-registry.usersys.redhat.com/markllama/pulp-base
 
 ADD run.sh /run.sh
 

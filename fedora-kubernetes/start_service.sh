@@ -5,7 +5,7 @@ set -x
 #
 PULP_SERVER_NAME=${1:-pulp.example.com}
 
-REGISTRY=${REGISTRY:=docker-registry.usersys.redhat.com}
+#REGISTRY=${REGISTRY:="docker-registry.usersys.redhat.com/"}
 
 docker_ip() {
     # CONTAINER_NAME=$1
@@ -14,12 +14,12 @@ docker_ip() {
 
 # start a qpid image
 start_qpid_service() {
-    docker run -d --name pulp-qpid ${REGISTRY}/markllama/qpid
+    docker run -d --name pulp-qpid ${REGISTRY}markllama/qpid
 }
 
 # start a mongodb image
 start_db_service() {
-    docker run -d --name pulp-db ${REGISTRY}/markllama/mongodb
+    docker run -d --name pulp-db ${REGISTRY}markllama/mongodb
 }
 
 print_journal() {
@@ -36,7 +36,7 @@ start_beat_service() {
         -e PULP_SERVER_NAME=$1 \
         -e DB_SERVICE_HOST=$2 \
         -e MSG_SERVICE_HOST=$3 \
-        ${REGISTRY}/markllama/pulp-beat
+        ${REGISTRY}markllama/pulp-beat
 }
 
 database_migration_complete() {
@@ -53,13 +53,13 @@ start_resource_manager_service() {
         -e PULP_SERVER_NAME=$1 \
         -e DB_SERVICE_HOST=$2 \
         -e MSG_SERVICE_HOST=$3 \
-        ${REGISTRY}/markllama/pulp-resource-manager
+        ${REGISTRY}markllama/pulp-resource-manager
 }
 
 # start the celerybeat image
 start_content_volumes() {
     docker run -d --name pulp-content-volumes \
-        ${REGISTRY}/markllama/pulp-content-volumes
+        ${REGISTRY}markllama/pulp-content-volumes
 }
 
 # start a worker image
@@ -74,7 +74,7 @@ start_worker_service() {
         -e PULP_SERVER_NAME=$1 \
         -e DB_SERVICE_HOST=$2 \
         -e MSG_SERVICE_HOST=$3 \
-        ${REGISTRY}/markllama/pulp-worker $4
+        ${REGISTRY}markllama/pulp-worker $4
 }
 
 # start an apache image
@@ -89,7 +89,7 @@ start_apache_service() {
         -e PULP_SERVER_NAME=$1 \
         -e DB_SERVICE_HOST=$2 \
         -e MSG_SERVICE_HOST=$3 \
-        ${REGISTRY}/markllama/pulp-apache
+        ${REGISTRY}markllama/pulp-apache
 }
 
 # start a crane image

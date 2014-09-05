@@ -1,56 +1,30 @@
 #!/bin/sh
 
-# Display startup activity
 set -x
 
-
-# Take settings from Kubernetes service environment unless they are explicitly
-# provided
-PULP_SERVER_CONF=${PULP_SERVER_CONF:=/etc/pulp/server.conf}
-
-PULP_SERVER_NAME=${PULP_SERVER_NAME:=pulp.example.com}
-
-DB_SERVICE_HOST=${DB_SERVICE_HOST:=${SERVICE_HOST}}
-DB_SERVICE_PORT=${DB_SERVICE_PORT:=27017}
-
-MSG_SERVICE_HOST=${MSG_SERVICE_HOST:=${SERVICE_HOST}}
-MSG_SERVICE_PORT=${MSG_SERVICE_PORT:=5672}
-
-check_config_target() {
-    if [ ! -f ${PULP_SERVER_CONF} ]
+#
+# Use the test_db_available.py script to poll for the DB server
+#
+wait_for_database() {
+    DB_TEST_TRIES=12
+    DB_TEST_POLLRATE=5
+    TRY=0
+    while [ $TRY -lt $DB_TEST_TRIES ] && ! /test_db_available.py 
+    do
+	TRY=$(($TRY + 1))
+	echo "Try #${TRY}: DB unavailable - sleeping ${DB_TEST_POLLRATE}"
+	sleep $DB_TEST_POLLRATE
+    done
+    if [ $TRY -ge $DB_TEST_TRIES ]
     then
-        echo "Cannot find required config file ${PULP_SERVER_CONF}"
-        exit 2  
+	echo "Unable to contact DB after $TRY tries: aborting container"
+        exit 2
     fi
 }
 
 #
-# Set the Pulp service public hostname
+# Create the initial database for Pulp
 #
-configure_server_name() {
-    sed -i -e "s/%PULP_SERVER_NAME%/${PULP_SERVER_NAME}/" ${PULP_SERVER_CONF}
-}
-
-#
-# Set the messaging server access information
-#
-configure_messaging() {
-    sed -i \
-        -e "s/%MSG_SERVICE_HOST%/${MSG_SERVICE_HOST}/" \
-        -e "s/%MSG_SERVICE_PORT%/${MSG_SERVICE_PORT}/" \
-        $PULP_SERVER_CONF
-}
-
-#
-# Set the database access information
-#
-configure_database() {
-    sed -i \
-        -e "s/%DB_SERVICE_HOST%/${DB_SERVICE_HOST}/" \
-        -e "s/%DB_SERVICE_PORT%/${DB_SERVICE_PORT}/" \
-        $PULP_SERVER_CONF
-}
-
 initialize_database() {
     # why apache? MAL
     runuser apache -s /bin/bash /bin/bash -c "/usr/bin/pulp-manage-db"
@@ -60,19 +34,39 @@ initialize_database() {
 #
 # Begin running the Celery Beat scheduler
 # 
-start_celerybeat() {
+run_celerybeat() {
     exec runuser apache -s /bin/bash -c "/usr/bin/celery beat --workdir=/var/lib/pulp/celery --scheduler=pulp.server.async.scheduler.Scheduler -f /var/log/pulp/celerybeat.log -l INFO"
 }
 
 # =============================================================================
 # Main
 # =============================================================================
-check_config_target
+#
 
-configure_server_name
-configure_database
-configure_messaging
+#
+# First, initialize the pulp server configuration
+#
+if [ ! -x /configure_pulp_server.sh ]
+then
+  echo >&2 "Missing required initialization script for pulp server: /configure_pulp_server.sh"
+  exit 2
+fi
+/configure_pulp_server.sh
 
+if [ ! -x /test_db_available.py ] 
+then
+  echo >&2 "Missing required initialization script for pulp server: /test_db_available.py"
+  exit 2
+fi
+wait_for_database
+
+#
+# This should only be done once per Pulp service instance.  Since the
+# beat server is a singleton, this should work.
+#
 initialize_database
 
-start_celerybeat
+#
+# The celery beat service is the scheduling heart of the pulp service
+#
+run_celerybeat
