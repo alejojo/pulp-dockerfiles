@@ -2,7 +2,8 @@
   "id": "db",
   "kind": "Service",
   "apiversion": "v1beta1",
-  "port": 27017,
+  "port": 47017,
+  "containerPort": 27017,
   "selector": {
     "name": "db"
   },

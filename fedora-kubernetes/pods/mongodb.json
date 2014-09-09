@@ -10,9 +10,18 @@
       "containers": [{
         "name": "pulp-db",
         "image": "markllama/mongodb",
-        "ports": [{ "containerPort": 27017 }]
-      }]
+        "ports": [{ "containerPort": 27017 }],
+	"volumeMounts": [{
+	  "name": "devlog",
+	  "readOnly": false,
+	  "mountPath": "/dev/log"
+	}],
+      }],
+      "volumes": [{
+	"name": "devlog",
+	"source": {"hostDir": {"path": "/dev/log"}}
+      }],
     }
-  },
+  }
 }
 

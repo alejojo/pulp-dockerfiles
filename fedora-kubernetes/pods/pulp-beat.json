@@ -6,7 +6,7 @@
       "id": "pulp-beat",
       "containers": [{
 	"name": "pulp-beat",
-	"image": "docker-registry.usersys.redhat.com/markllama/pulp-beat",
+	"image": "markllama/pulp-beat",
 	"env": [{
 	  "name": "PULP_SERVER_NAME",
 	  "value": "pulp.example.com"
