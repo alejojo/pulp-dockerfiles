@@ -51,7 +51,7 @@ then
   echo >&2 "Missing required initialization script for pulp server: /configure_pulp_server.sh"
   exit 2
 fi
-/configure_pulp_server.sh
+. /configure_pulp_server.sh
 
 if [ ! -x /test_db_available.py ] 
 then
