@@ -21,4 +21,4 @@ USER mongodb
 
 WORKDIR /var/lib/mongodb
 
-CMD [ "/usr/bin/mongod", "--quiet", "--config", "/etc/mongodb.conf", "run"]
+CMD [ "/usr/bin/mongod", "--verbose", "--config", "/etc/mongodb.conf", "--syslog", "run"]
