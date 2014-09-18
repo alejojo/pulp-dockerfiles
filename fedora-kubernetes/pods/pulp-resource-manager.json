@@ -6,7 +6,7 @@
       "id": "pulp-resource-manager",
       "containers": [{
 	"name": "pulp-resource-manager",
-	"image": "docker-registry.usersys.redhat.com/markllama/pulp-resource-manager",
+	"image": "markllama/pulp-resource-manager",
 	"env": [{
 	  "name": "PULP_SERVER_NAME",
 	  "value": "pulp.example.com"
